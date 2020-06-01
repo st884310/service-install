@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+  <title>123</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://use.fontawesome.com/releases/v5.7.0/css/all.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Playfair+Display:700,900">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.0.0/sweetalert2.all.js"></script>
+</head>
+<style>
+.back{
+  background-color: lightblue;
+}
+</style>
+<body> 
+   <script>
+      swal.setDefaults({
+      confirmButtonText: "確定",
+      cancelButtonText: "取消"
+      });//swal.resetDefaults();//清空自訂預設值
+//-----------------------------------------------------------
+      $(function(){//select user
+        $.ajax({
+          type:'GET',
+          url:'./index.php',
+          success:function(data){
+            console.log(data);
+            var thisdata = JSON.parse(data);
+            var i;
+          text = "";
+          for (i = 0; i < thisdata.length; i++) {
+          text += "<tr id=dele" + thisdata[i].id + "><td>" + thisdata[i].name + "</td><td>" + thisdata[i].age + "</td><td>" + thisdata[i].phone + "</td><td><button onclick='upd("+ thisdata[i].id  +")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#myModal'>修改</button></td><td><button onclick='myf("+ thisdata[i].id  +")'  type='button' class='btn btn-danger'>刪除</button></td></tr>";
+          }
+            $('#demo').html(text);
+          }
+        });
+      });
+//-----------------------------------------------------------
+      function myf(x){ //刪除使用者
+        swal({
+              title: "確定刪除？",
+              html: "按下確定後資料會永久刪除",
+              type: "question",
+              showCancelButton: true//顯示取消按鈕
+          }).then(
+              function (result){
+                  if (result.value){
+                      //使用者按下「確定」要做的事
+                      swal("完成!", "資料已經刪除", "success");
+        $(function(){
+          $.ajax({
+            type:'POST',
+            url:'./dele.php?x='+x,
+            data:{},
+            dataType: 'json',
+            success: function(response,status){
+              var x = response;
+              $("#dele"+x).remove();
+            }
+          });
+        });         
+                  }else if (result.dismiss === "cancel")
+                  {
+                       //使用者按下「取消」要做的事
+                      swal("取消", "資料未被刪除", "error");
+                  }//end else  
+          });//end then 
+        }
+//------------------------------------------------------------------
+        function upd(x){ //叫出使用者資料
+        $(function(){
+          $.ajax({
+            type:'POST',
+            url:'./setuser.php?x='+x,  
+            success: function(data){
+            var thisdata = JSON.parse(data);
+            $("#id").val(thisdata[0].id);
+            $("#name").val(thisdata[0].name);
+            $("#age").val(thisdata[0].age);
+            $("#phone").val(thisdata[0].phone);
+            }
+          });
+        });         
+       }
+//---------------------------------------------------------------------
+       function updat(){
+        // var id=$("#id").val();
+         //document.getElementById("demoo").innerHTML = id;
+         $(function(){
+          $.ajax({
+            type:'POST',
+            url:'./updateuser.php',
+            data:{
+              id:$("#id").val(),
+              name:$("#name").val(),
+              age:$("#age").val(),
+              phone:$("#phone").val()
+            },
+            dataType: 'json',
+            success: function(res,status)
+						{
+              text = "<tr id=dele" + $("#id").val() + "><td>" + $("#name").val() + "</td><td>" + $("#age").val() + "</td><td>" + $("#phone").val() + "</td><td><button onclick='upd("+ $("#id").val()  +")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#myModal'>修改</button></td><td><button onclick='myf("+ $("#id").val()  +")'  type='button' class='btn btn-danger'>刪除</button></td></tr>";
+              document.getElementById("dele" + $("#id").val()).innerHTML = text;
+							swal("修改完成","",'success');
+							//showtable("member");
+            }
+          });
+        }); 
+       }
+//-------------------------------------------
+$(document).ready(function(){
+  $("#sdata").keyup(function search(){ 
+     
+    $(function(){//search user
+        $.ajax({
+          type:'POST',
+          url:'./search.php',
+          data:{
+            searname:$("#searname").val(),
+            sdata:$("#sdata").val()
+          },
+          success:function(data){
+            var thisdata = JSON.parse(data);
+            var i;
+            text = "";
+              for (i = 0; i < thisdata.length; i++) {
+                text += "<tr class='' id=dele" + thisdata[i].id + "><td>" + thisdata[i].name + "</td><td>" + thisdata[i].age + "</td><td>" + thisdata[i].phone + "</td><td><button onclick='upd("+ thisdata[i].id  +")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#myModal'>修改</button></td><td><button onclick='myf("+ thisdata[i].id  +")'  type='button' class='btn btn-danger'>刪除</button></td></tr>";
+              }
+                $('#demo').html(text);
+
+          }
+          });
+        });  
+    }); 
+}); 
+//--------------------------------------------   
+function inser(){
+  $(function(){
+          $.ajax({
+            type:'POST',
+            url:'./inser.php',
+            data:{
+              id:$("#iid").val(),
+              iname:$("#iname").val(),
+              iage:$("#iage").val(),
+              iphone:$("#iphone").val()
+            },
+            dataType: 'json',
+            success: function(res,status)
+						{
+              var i=0;
+              var thdata = res;
+              text = "<tr class='' id=dele" + thdata[i].id + "><td>" + thdata[i].name + "</td><td>" + thdata[i].age + "</td><td>" + thdata[i].phone + "</td><td><button onclick='upd("+ thdata[i].id  +")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#myModal'>修改</button></td><td><button onclick='myf("+ thdata[i].id  +")'  type='button' class='btn btn-danger'>刪除</button></td></tr>";
+              $("#demo").append(text);
+              swal("新增成功","",'success');
+              $("#iid").val("");
+              $("#iname").val("");
+              $("#iphone").val("");
+              $("#iage").val("");
+							//showtable("member");
+            }
+          });
+        }); 
+}
+    </script>
+<div class="container">
+    <h2>User_message</h2>
+    <button onclick='upd("+ thisdata[i].id  +")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#Modal'>新增</button>
+    <div class="form-group">
+        <select class="form-control" id="searname">
+            <option value="123">選擇欄位...</option>
+            <option value="name">Name</option>
+            <option value="phone">Phone</option>
+            <option value="age">Age</option>
+          </select>
+        <input type="text" class="form-control" placeholder="Search" id="sdata">
+      </div>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Phone</th>
+          <th>刪除</th>
+          <th>修改</th>
+        </tr>
+      </thead>
+      <tbody id=demo>
+      </tbody>
+    </table>
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">修改資料</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="text-center"for="id">
+                    <input type="hidden" class="form-control" id="id" />
+                </div>
+                <div class="col-sm-8 text-center">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control"   id="name">
+                </div>
+                <div class="col-sm-8 text-center">
+                    <label for="name">Age</label>
+                    <input type="text" class="form-control"   id="age">
+                </div>
+                <div class="col-sm-8 text-center">
+                    <label for="name">Phone</label>
+                    <input type="text" class="form-control"   id="phone">
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button onclick="updat()" type="button" class="btn btn-success" data-dismiss="modal" id="upbutt">更新</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      <!--新增-->
+      <div class="modal fade" id="Modal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <!-- Modal Header -->
+              <div class="modal-header">
+                <h4 class="modal-title">修改資料</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+              </div>
+              <!-- Modal body -->
+              <div class="modal-body">
+                  <div class="text-center"for="id">
+                      <input type="hidden" class="form-control" id="iid" />
+                  </div>
+                  <div class="col-sm-8 text-center">
+                      <label for="name">Name</label>
+                      <input type="text" class="form-control"   id="iname">
+                  </div>
+                  <div class="col-sm-8 text-center">
+                      <label for="name">Age</label>
+                      <input type="text" class="form-control"   id="iage">
+                  </div>
+                  <div class="col-sm-8 text-center">
+                      <label for="name">Phone</label>
+                      <input type="text" class="form-control"   id="iphone">
+                  </div>
+              </div>
+              <!-- Modal footer -->
+              <div class="modal-footer">
+                  <button onclick="inser()" type="button" class="btn btn-success" data-dismiss="modal" id="inserbut">新增</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+  </div>
+<p id="demoo"></p>
+</body>
+</html>
